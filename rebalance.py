@@ -20,7 +20,7 @@ def load_from_csv(path_to_csv):
 def validate_csv(df):
     """
     Ensures csv file has required columns and data is valid
-    :param df:
+    :param df: DataFrame
     :return:
     """
     required_cols = {'Fund', 'Balance', 'Target'}
@@ -36,8 +36,8 @@ def validate_csv(df):
 def rebalance(df, total_dollars_added):
     """
     Allocates dollars to each fund according to specified targets
-    :param df:
-    :param total_dollars_added:
+    :param df: DataFrame
+    :param total_dollars_added: total dollars to be added to portfolio
     :return:
     """
     cur_balance = df['Balance'].sum()
@@ -48,6 +48,18 @@ def rebalance(df, total_dollars_added):
     return dollars_to_add_per_fund
 
 
+def build_allocation_df(df):
+    """
+    Construct DataFrame with current allocation, target allocation, and difference for each fund
+    :param df: DataFrame
+    :return:
+    """
+    allocation_df = pd.DataFrame(index=df.index)
+    allocation_df['Current_Allocation'] = df['Balance'] / df['Balance'].sum()
+    allocation_df['Target_Allocation'] = df['Target']
+    allocation_df['Difference'] = allocation_df['Current_Allocation'] - allocation_df['Target_Allocation']
+    return (100 * allocation_df[['Current_Allocation', 'Target_Allocation', 'Difference']]).round(2)
+
 
 if __name__ == '__main__':
 
@@ -56,16 +68,25 @@ if __name__ == '__main__':
     parser.add_argument('--funds_to_add', help='Total dollars to be added to portfolio', default=1000, type=float)
     args = parser.parse_args()
 
+    # load data
     try:
         df = load_from_csv(args.portfolio_csv)
     except ValueError as e:
         print e
         sys.exit()
 
+    # compute rebalance funds
     try:
         rebalance_funds = rebalance(df, args.funds_to_add)
     except ValueError as e:
         print e
         sys.exit()
 
+    # get current allocation info for display
+    current_allocation = build_allocation_df(df)
+
+    # display results
+    print '\nCurrent allocation vs Targets...'
+    print current_allocation.to_string()
+    print '\nDollars to add to reach target allocation...'
     print rebalance_funds.to_string()
