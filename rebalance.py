@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import pandas as pd
 import sys
 
@@ -26,7 +27,7 @@ def validate_csv(df):
     required_cols = {'Fund', 'Balance', 'Target'}
     if set(df.columns) != required_cols:
         raise ValueError('Must provide all required columns: %s' % required_cols)
-    if df['Target'].sum() != 1:
+    if not np.allclose(df['Target'].sum(), 1):
         raise ValueError('Targets must sum to 1')
     if (df['Balance'] < 0).any():
         raise ValueError('Balances must not be negative')
@@ -48,9 +49,25 @@ def rebalance(df, total_dollars_added):
     return dollars_to_add_per_fund
 
 
-def build_allocation_df(df):
+def display_rebalance_info(df, rebalance_funds):
     """
-    Construct DataFrame with current allocation, target allocation, and difference for each fund
+    Print DataFrame with amount to be used for rebalancing and allocation info
+    :param df: DataFrame
+    :param rebalance_funds: Series resulting from rebalance()
+    :return:
+    """
+    rebalanced = pd.DataFrame(index=df.index)
+    rebalanced['Allocation'] = rebalance_funds / rebalance_funds.sum()
+    rebalanced['Target_Allocation'] = df['Target']
+    rebalanced['Difference'] = rebalanced['Allocation'] - rebalanced['Target_Allocation']
+    rebalanced = (100 * rebalanced).round(2)
+    rebalanced['Dollars_to_Add'] = rebalance_funds
+    print rebalanced[['Dollars_to_Add', 'Allocation', 'Target_Allocation', 'Difference']].to_string()
+
+
+def display_allocation_info(df):
+    """
+    Print DataFrame with current allocation, target allocation, and difference for each fund
     :param df: DataFrame
     :return:
     """
@@ -58,14 +75,14 @@ def build_allocation_df(df):
     allocation_df['Current_Allocation'] = df['Balance'] / df['Balance'].sum()
     allocation_df['Target_Allocation'] = df['Target']
     allocation_df['Difference'] = allocation_df['Current_Allocation'] - allocation_df['Target_Allocation']
-    return (100 * allocation_df[['Current_Allocation', 'Target_Allocation', 'Difference']]).round(2)
+    print (100 * allocation_df[['Current_Allocation', 'Target_Allocation', 'Difference']]).round(2).to_string()
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('portfolio_csv', help='Path to csv containing portfolio information')
-    parser.add_argument('--funds_to_add', help='Total dollars to be added to portfolio', default=1000, type=float)
+    parser.add_argument('funds_to_add', help='Total dollars to be added to portfolio', type=float)
     args = parser.parse_args()
 
     # load data
@@ -82,11 +99,9 @@ if __name__ == '__main__':
         print e
         sys.exit()
 
-    # get current allocation info for display
-    current_allocation = build_allocation_df(df)
-
     # display results
     print '\nCurrent allocation vs Targets...'
-    print current_allocation.to_string()
+    display_allocation_info(df)
     print '\nDollars to add to reach target allocation...'
-    print rebalance_funds.to_string()
+    display_rebalance_info(df, rebalance_funds)
+    print '\n'
