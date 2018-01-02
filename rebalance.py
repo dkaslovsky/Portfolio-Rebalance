@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('portfolio_csv', help='Path to csv containing portfolio information')
-    parser.add_argument('funds_to_add', help='Total dollars to be added to portfolio', type=float)
+    parser.add_argument('dollars_to_add', help='Total dollars to be added to portfolio', type=float)
     args = parser.parse_args()
 
     # load data
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     # compute rebalance funds
     try:
-        rebalance_funds = rebalance(df, args.funds_to_add)
+        rebalance_funds = rebalance(df, args.dollars_to_add)
     except ValueError as e:
         print e
         sys.exit()
