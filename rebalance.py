@@ -34,18 +34,20 @@ def validate_csv(df):
     return True
 
 
-def rebalance(df, total_dollars_added):
+def rebalance(df, total_dollars_added, allow_negative=False):
     """
     Allocates dollars to each fund according to specified targets
     :param df: DataFrame
     :param total_dollars_added: total dollars to be added to portfolio
+    :param allow_negative: allow negative contributions
     :return:
     """
     cur_balance = df['Balance'].sum()
     new_balance = cur_balance + total_dollars_added
     dollars_to_add_per_fund = (df['Target'] * new_balance) - df['Balance']
-    if (dollars_to_add_per_fund < 0).any():
-        raise ValueError('Must add more money for strictly additive rebalance')
+    if not allow_negative:
+        if (dollars_to_add_per_fund < 0).any():
+            raise ValueError('Must add more money for strictly additive rebalance')
     return dollars_to_add_per_fund
 
 
@@ -61,7 +63,7 @@ def display_rebalance_info(df, rebalance_funds):
     rebalanced['Target_Allocation'] = df['Target']
     rebalanced['Difference'] = rebalanced['Allocation'] - rebalanced['Target_Allocation']
     rebalanced = (100 * rebalanced).round(2)
-    rebalanced['Dollars_to_Add'] = rebalance_funds
+    rebalanced['Dollars_to_Add'] = rebalance_funds.round(2)
     print rebalanced[['Dollars_to_Add', 'Allocation', 'Target_Allocation', 'Difference']].to_string()
 
 
@@ -83,6 +85,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('portfolio_csv', help='Path to csv containing portfolio information')
     parser.add_argument('dollars_to_add', help='Total dollars to be added to portfolio', type=float)
+    parser.add_argument('--allow_negative', help='Allow negative contributions',
+                        action='store_true', required=False)
     args = parser.parse_args()
 
     # load data
@@ -94,7 +98,7 @@ if __name__ == '__main__':
 
     # compute rebalance funds
     try:
-        rebalance_funds = rebalance(df, args.dollars_to_add)
+        rebalance_funds = rebalance(df, args.dollars_to_add, args.allow_negative)
     except ValueError as e:
         print e
         sys.exit()
