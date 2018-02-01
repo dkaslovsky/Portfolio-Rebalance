@@ -64,7 +64,9 @@ def display_rebalance_info(df, rebalance_funds):
     rebalanced['Difference'] = rebalanced['Allocation'] - rebalanced['Target_Allocation']
     rebalanced = (100 * rebalanced).round(2)
     rebalanced['Dollars_to_Add'] = rebalance_funds.round(2)
-    print rebalanced[['Dollars_to_Add', 'Allocation', 'Target_Allocation', 'Difference']].to_string()
+    print (rebalanced[['Dollars_to_Add', 'Allocation', 'Target_Allocation', 'Difference']]
+           .sort_values('Dollars_to_Add', ascending=False)
+           .to_string())
 
 
 def display_allocation_info(df):
