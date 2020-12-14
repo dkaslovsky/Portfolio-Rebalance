@@ -79,7 +79,7 @@ def display_allocation_info(df):
     allocation_df['Current_Allocation'] = df['Balance'] / df['Balance'].sum()
     allocation_df['Target_Allocation'] = df['Target']
     allocation_df['Difference'] = allocation_df['Current_Allocation'] - allocation_df['Target_Allocation']
-    print (100 * allocation_df[['Current_Allocation', 'Target_Allocation', 'Difference']]).round(2).to_string()
+    print (100 * allocation_df[['Current_Allocation', 'Target_Allocation', 'Difference']]).round(2).sort_values('Difference', ascending=False).to_string()
 
 
 if __name__ == '__main__':
