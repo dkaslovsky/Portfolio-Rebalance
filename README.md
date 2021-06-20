@@ -1,13 +1,15 @@
 # Portfolio-Rebalance
-Small project for rebalancing an investment portfolio by allocating funds to realize specified targets
+Small script for rebalancing an investment portfolio by allocating funds to realize specified targets
 
-<br>
+<br/>
 
-**Example Usage**
+## Example Usage
+
+<br/>
 
 Rebalance the portfolio summarized by `example_funds.csv` by adding $1000:
 ```
->> python rebalance.py example_portfolio.csv 1000
+>> python3 rebalance.py example_portfolio.csv 1000
 Current allocation vs Targets...
              Current_Allocation  Target_Allocation  Difference
 Fund                                                          
@@ -26,14 +28,14 @@ InvestmentC           265.0        26.5               30.0        -3.5
 If the dollar amount to be added is not enough for an additive (positive) contribution to each fund, no contribution is possible:
 
 ```
->> python rebalance.py example_portfolio.csv 100
+>> python3 rebalance.py example_portfolio.csv 100
 Must add more money for strictly additive rebalance
 ```
 
 Negative contributions can be computed by passing the `--allow_negative` flag:
 
 ```
->> python rebalance.py --allow_negative example_portfolio.csv 100
+>> python3 rebalance.py --allow_negative example_portfolio.csv 100
 Current allocation vs Targets...
              Current_Allocation  Target_Allocation  Difference
 Fund                                                          
